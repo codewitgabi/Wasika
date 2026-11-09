@@ -47,12 +47,13 @@ export function postcardUrl({
     // 1. Landmark photo fills the 3:2 postcard, cropped around its most interesting part.
     `c_fill,g_auto,w_${POSTCARD_WIDTH},h_${POSTCARD_HEIGHT}`,
 
-    // 2. Selfie: remove the background, frame around the face(s), scale, and
-    //    stand it on the bottom edge, right of centre.
+    // 2. Selfie: remove the background, trim the empty space around the person,
+    //    fit (never crop, so no straight cut edges at the sides), and stand it
+    //    on the bottom edge, right of centre.
     `l_${layerId(selfiePublicId)}`,
     "e_background_removal",
-    "c_fill,ar_3:4,g_faces",
-    "c_scale,h_620",
+    "e_trim",
+    "c_fit,w_620,h_640",
     "fl_layer_apply,g_south_east,x_90,y_0",
 
     // 3. Caption, top left.
