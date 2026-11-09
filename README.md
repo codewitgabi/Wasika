@@ -50,6 +50,8 @@ Cloudinary values are under **Console > Settings > API Keys**.
 
 ```
 app/                 Next.js routes
+app/api/sign-upload/ Signs selfie uploads for the Cloudinary upload widget
+lib/cloudinary.ts    Server-side Cloudinary config (server only)
 lib/db.ts            Shared Prisma client (Neon adapter)
 lib/landmarks.ts     The five landmarks and their stories (static config)
 prisma/schema.prisma Database schema
