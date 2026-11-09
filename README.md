@@ -62,3 +62,12 @@ assets/landmarks/    Source landmark photos, one per slug
 scripts/             One-off scripts (landmark upload)
 generated/prisma/    Generated Prisma client (gitignored)
 ```
+
+## Deploying
+
+Deployed on Vercel from GitHub. `vercel.json` pins server functions to Frankfurt (`fra1`), next to the Neon database (`aws-eu-central-1`).
+
+1. Import the repo in Vercel. It detects Next.js and pnpm.
+2. Add all the variables from `.env.example` under **Settings > Environment Variables**.
+3. Also add `ENABLE_EXPERIMENTAL_COREPACK=1` so Vercel builds with the pnpm version pinned in `package.json`.
+4. Migrations don't run on deploy. After a schema change, run `pnpm db:deploy` against the production database.
