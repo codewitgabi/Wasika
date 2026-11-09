@@ -28,6 +28,11 @@ pnpm dev                     # http://localhost:3000
 |---|---|---|
 | `DATABASE_URL` | the app | Neon **pooled** connection string |
 | `DATABASE_URL_UNPOOLED` | Prisma migrations | Neon **direct** connection string. Migrations need it because the pooler breaks the locks `prisma migrate` takes |
+| `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` | browser and server | Cloudinary cloud name |
+| `NEXT_PUBLIC_CLOUDINARY_API_KEY` | browser and server | Cloudinary API key. Public: the upload widget needs it to send signed uploads |
+| `CLOUDINARY_API_SECRET` | server only | Cloudinary API secret. Used to sign uploads; never expose it to the browser |
+
+Cloudinary values are under **Console > Settings > API Keys**.
 
 ## Scripts
 
