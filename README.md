@@ -51,6 +51,7 @@ Cloudinary values are under **Console > Settings > API Keys**.
 ```
 app/                 Next.js routes
 lib/db.ts            Shared Prisma client (Neon adapter)
+lib/landmarks.ts     The five landmarks and their stories (static config)
 prisma/schema.prisma Database schema
 prisma/migrations/   Migration history (committed)
 prisma.config.ts     Prisma CLI config: env loading and connection URL
