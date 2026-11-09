@@ -13,7 +13,8 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio",
-    "landmarks:upload": "tsx scripts/upload-landmarks.ts"
+    "landmarks:upload": "tsx scripts/upload-landmarks.ts",
+    "postcard:url": "tsx scripts/postcard-url.ts"
   },
   "dependencies": {
     "@prisma/adapter-neon": "^7.10.1",
