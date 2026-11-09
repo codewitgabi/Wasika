@@ -45,6 +45,7 @@ Cloudinary values are under **Console > Settings > API Keys**.
 | `pnpm db:deploy` | Apply existing migrations (production) |
 | `pnpm db:generate` | Regenerate the Prisma client (also runs on `pnpm install`) |
 | `pnpm db:studio` | Browse the database in Prisma Studio |
+| `pnpm landmarks:upload [slug...]` | Upload the photos in `assets/landmarks/` to Cloudinary as `landmarks/<slug>` (all landmarks, or only the ones named) |
 
 ## Project layout
 
@@ -57,5 +58,7 @@ lib/landmarks.ts     The five landmarks and their stories (static config)
 prisma/schema.prisma Database schema
 prisma/migrations/   Migration history (committed)
 prisma.config.ts     Prisma CLI config: env loading and connection URL
+assets/landmarks/    Source landmark photos, one per slug
+scripts/             One-off scripts (landmark upload)
 generated/prisma/    Generated Prisma client (gitignored)
 ```

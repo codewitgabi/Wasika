@@ -38,19 +38,19 @@ export const LANDMARKS = [
     storyHa: null,
   },
   {
-    slug: "shiroro-dam",
-    name: "Shiroro Dam",
-    area: "Shiroro",
+    slug: "zungeru-dam",
+    name: "Zungeru Dam",
+    area: "Wushishi",
     storyEn:
-      "A hydroelectric dam on the Kaduna River, set among rocky hills.",
+      "A hydroelectric dam on the Kaduna River near Zungeru, the old capital of Northern Nigeria.",
     storyHa: null,
   },
   {
-    slug: "bida",
-    name: "Bida",
-    area: "Bida",
-    storyEn:
-      "Seat of the Nupe kingdom, known for generations of brass, glass and bead craft.",
+    slug: "juju-rock",
+    name: "Juju Rock",
+    // TODO: confirm the local government area and write the one-line story.
+    area: "",
+    storyEn: "",
     storyHa: null,
   },
 ] as const satisfies readonly Landmark[];
