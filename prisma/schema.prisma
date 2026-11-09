@@ -1,0 +1,26 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+// The connection URL lives in prisma.config.ts (Prisma 7).
+datasource db {
+  provider = "postgresql"
+}
+
+model Postcard {
+  id             String   @id @default(cuid())
+  /// Short public id used in the share URL: /p/[slug]
+  slug           String   @unique
+  /// Matches a slug in lib/landmarks.ts (landmarks are static config, not rows)
+  landmark       String
+  name           String
+  message        String?
+  /// Cloudinary public_id of the uploaded selfie
+  selfiePublicId String
+  /// Opt-in to the public gallery; selfies are unlisted by default
+  isPublic       Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  @@index([isPublic, createdAt])
+}

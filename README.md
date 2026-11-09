@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Postcard from Minna
 
-## Getting Started
+Upload a selfie, pick a Niger State landmark, and get a shareable postcard of yourself there: a real landmark photo, your cut-out selfie, a stamp and a short English and Hausa caption.
 
-First, run the development server:
+Built for the Cloudinary November Mini-Hack, "Celebrate Where You're From".
+
+## Stack
+
+- [Next.js](https://nextjs.org) 16 (App Router, TypeScript) and Tailwind CSS v4
+- [Cloudinary](https://cloudinary.com): `cloudinary` (server SDK) and `next-cloudinary`
+- Postgres on [Neon](https://neon.tech), using [Prisma](https://www.prisma.io) 7 with the Neon driver adapter
+- pnpm
+
+## Getting started
+
+Requirements: Node.js 20.19 or newer (Prisma 7's minimum), and pnpm.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install                 # also generates the Prisma client
+cp .env.example .env.local   # then fill in the values
+pnpm db:migrate              # apply migrations to your database
+pnpm dev                     # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Environment variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Variable | Used by | Value |
+|---|---|---|
+| `DATABASE_URL` | the app | Neon **pooled** connection string |
+| `DATABASE_URL_UNPOOLED` | Prisma migrations | Neon **direct** connection string. Migrations need it because the pooler breaks the locks `prisma migrate` takes |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Scripts
 
-## Learn More
+| Script | What it does |
+|---|---|
+| `pnpm dev` | Start the dev server |
+| `pnpm build` / `pnpm start` | Production build and server |
+| `pnpm lint` | Run ESLint |
+| `pnpm db:migrate` | Create and apply a migration after a schema change (development) |
+| `pnpm db:deploy` | Apply existing migrations (production) |
+| `pnpm db:generate` | Regenerate the Prisma client (also runs on `pnpm install`) |
+| `pnpm db:studio` | Browse the database in Prisma Studio |
 
-To learn more about Next.js, take a look at the following resources:
+## Project layout
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+app/                 Next.js routes
+lib/db.ts            Shared Prisma client (Neon adapter)
+prisma/schema.prisma Database schema
+prisma/migrations/   Migration history (committed)
+prisma.config.ts     Prisma CLI config: env loading and connection URL
+generated/prisma/    Generated Prisma client (gitignored)
+```

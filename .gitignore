@@ -40,3 +40,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 PLAN.md 
+
+# prisma client (regenerated on install)
+/generated/prisma
+!.env.example
