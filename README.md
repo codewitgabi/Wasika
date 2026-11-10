@@ -55,6 +55,7 @@ Cloudinary values are under **Console > Settings > API Keys**.
 app/                 Next.js routes
 app/create-form.tsx  Home page flow: upload a selfie, pick a place, sign it
 app/api/sign-upload/ Signs selfie uploads for the Cloudinary upload widget
+app/api/cutouts/     Removes a selfie's background right after upload (stored once, reused)
 app/api/postcards/   Creates a postcard record from a verified upload
 app/p/[slug]/        Share page for a postcard (with link-preview tags)
 app/map/             Story map: the five places on a map of Niger State, with their stories

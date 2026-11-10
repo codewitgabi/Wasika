@@ -32,6 +32,42 @@ export function isGenuineUpload(publicId: string, version: number | string, sign
 }
 
 /**
+ * Checks an upload result sent by the browser ({ public_id, version, signature }
+ * from the widget): it must be a genuine upload into the selfies folder.
+ * Returns the selfie's public_id, or an error message for a 400.
+ */
+export function verifySelfieUpload(upload: unknown): { publicId: string } | { error: string } {
+  const u = upload as Record<string, unknown> | undefined;
+  const publicId = u?.public_id;
+  const version = u?.version;
+  const signature = u?.signature;
+  if (
+    typeof publicId !== "string" ||
+    (typeof version !== "number" && typeof version !== "string") ||
+    typeof signature !== "string"
+  ) {
+    return { error: "upload must include public_id, version and signature" };
+  }
+  if (!publicId.startsWith(`${SELFIE_FOLDER}/`)) {
+    return { error: `Selfie must be in the ${SELFIE_FOLDER} folder` };
+  }
+  if (!isGenuineUpload(publicId, version, signature)) {
+    return { error: "Upload signature is invalid" };
+  }
+  return { publicId };
+}
+
+/** True if the asset exists. Errors (including rate limits) count as "no". */
+async function cutoutExists(publicId: string): Promise<boolean> {
+  try {
+    await cloudinary.api.resource(publicId);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Removes the selfie's background once and stores the result as a transparent
  * PNG at cutouts/<id>, so postcard URLs can layer it without paying for
  * background removal again. Returns the cut-out's public_id, or null if it
@@ -46,8 +82,13 @@ export async function createCutout(
     format: "png",
     secure: true,
   });
+  const cutoutId = cutoutPublicIdFor(selfiePublicId);
   const deadline = Date.now() + timeoutMs;
   try {
+    // Already made (e.g. by /api/cutouts right after upload)? Then it's free.
+    // The Admin API is authoritative, unlike a CDN request that may cache a 404.
+    if (await cutoutExists(cutoutId)) return cutoutId;
+
     // Request the derived image first; Cloudinary answers 423 while it's still
     // processing. Once it's 200 it's cached, and the upload below is quick.
     for (;;) {
@@ -60,7 +101,7 @@ export async function createCutout(
       await new Promise((r) => setTimeout(r, pollMs));
     }
     const result = await cloudinary.uploader.upload(derivedUrl, {
-      public_id: cutoutPublicIdFor(selfiePublicId),
+      public_id: cutoutId,
       asset_folder: "cutouts",
       overwrite: true,
     });

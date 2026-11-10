@@ -1,7 +1,7 @@
 import { randomInt } from "node:crypto";
 import { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
-import { createCutout, isGenuineUpload, SELFIE_FOLDER } from "@/lib/cloudinary";
+import { createCutout, verifySelfieUpload } from "@/lib/cloudinary";
 import { isLandmarkSlug } from "@/lib/landmarks";
 import { MESSAGE_MAX, NAME_MAX } from "@/lib/limits";
 
@@ -54,23 +54,9 @@ export async function POST(request: Request) {
   }
 
   // The selfie: must be a genuine upload into the selfies folder.
-  const upload = body.upload as Record<string, unknown> | undefined;
-  const publicId = upload?.public_id;
-  const version = upload?.version;
-  const signature = upload?.signature;
-  if (
-    typeof publicId !== "string" ||
-    (typeof version !== "number" && typeof version !== "string") ||
-    typeof signature !== "string"
-  ) {
-    return bad("upload must include public_id, version and signature");
-  }
-  if (!publicId.startsWith(`${SELFIE_FOLDER}/`)) {
-    return bad(`Selfie must be in the ${SELFIE_FOLDER} folder`);
-  }
-  if (!isGenuineUpload(publicId, version, signature)) {
-    return bad("Upload signature is invalid");
-  }
+  const selfie = verifySelfieUpload(body.upload);
+  if ("error" in selfie) return bad(selfie.error);
+  const { publicId } = selfie;
 
   const landmark = body.landmark;
   if (typeof landmark !== "string" || !isLandmarkSlug(landmark)) {
@@ -91,8 +77,9 @@ export async function POST(request: Request) {
     return bad("isPublic must be true or false");
   }
 
-  // If this fails or times out, the postcard still works: its images just
-  // cut out on the fly (and cost a background removal per distinct URL).
+  // Usually already made by /api/cutouts while the form was being filled in,
+  // in which case this returns at once. If it fails or times out, the postcard
+  // still works: its images cut out on the fly instead.
   const cutoutPublicId = await createCutout(publicId);
 
   // Random slugs rarely collide; retry a few times if one does.

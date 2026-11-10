@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { CldUploadWidget } from "next-cloudinary";
 import { LANDMARKS, isLandmarkSlug, type LandmarkSlug } from "@/lib/landmarks";
 import { MESSAGE_MAX, NAME_MAX } from "@/lib/limits";
@@ -30,6 +30,17 @@ export function CreateForm() {
   const [isPublic, setIsPublic] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  // Background removal starts as soon as the selfie is uploaded (it can take
+  // ~15s), so it runs while the visitor fills in the rest of the form.
+  const cutoutRequest = useRef<Promise<unknown> | null>(null);
+
+  function startCutout(selfie: Upload) {
+    cutoutRequest.current = fetch("/api/cutouts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ upload: selfie }),
+    }).catch(() => undefined); // best effort: the create route retries it
+  }
 
   const missing = [
     !upload && "a selfie",
@@ -43,6 +54,8 @@ export function CreateForm() {
     setSubmitting(true);
     setError(null);
     try {
+      // Usually long finished; if not, wait so the postcard gets its cut-out.
+      await cutoutRequest.current;
       const res = await fetch("/api/postcards", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -88,11 +101,13 @@ export function CreateForm() {
           onSuccess={(result, { widget }) => {
             const info = result.info;
             if (typeof info === "object" && info?.signature) {
-              setUpload({
+              const selfie = {
                 public_id: info.public_id,
                 version: info.version,
                 signature: info.signature,
-              });
+              };
+              setUpload(selfie);
+              startCutout(selfie);
               setError(null);
               widget.close();
             }
