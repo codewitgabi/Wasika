@@ -59,6 +59,7 @@ export async function generateMetadata({
   const image = postcardUrl({
     cloudName: cloudName(),
     selfiePublicId: postcard.selfiePublicId,
+    cutoutPublicId: postcard.cutoutPublicId,
     landmark: landmarkSlug,
     name: postcard.name,
     format: "jpg",
@@ -103,6 +104,7 @@ async function Postcard({
   const base = {
     cloudName: cloudName(),
     selfiePublicId: postcard.selfiePublicId,
+    cutoutPublicId: postcard.cutoutPublicId,
     landmark: landmarkSlug,
     name: postcard.name,
   };

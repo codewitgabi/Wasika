@@ -25,6 +25,8 @@ export const POSTCARD_FONTS = {
 export type PostcardInput = {
   cloudName: string;
   selfiePublicId: string;
+  /** Stored cut-out (no background). When set, no background removal runs. */
+  cutoutPublicId?: string | null;
   landmark: LandmarkSlug;
   /** Optional sign-off, e.g. "Amina" renders as "Love, Amina" */
   name?: string;
@@ -50,12 +52,27 @@ export type PostcardInput = {
 export type PostcardStyle = "cutout" | "portrait";
 export type PostcardLight = "day" | "golden";
 
+/**
+ * Turns a selfie into a cut-out: shrink first (modern phones shoot ~50 MP and
+ * the free plan refuses transformations over 25 MP; background removal works
+ * at full size), remove the background, then trim the empty margin.
+ * Used once at creation to store the cut-out (see createCutout), and inline as
+ * a fallback for postcards without a stored cut-out.
+ */
+export const CUTOUT_TRANSFORMATION = "c_limit,w_1600,h_1600/e_background_removal/e_trim";
+
+/** Where a selfie's stored cut-out lives: selfies/abc -> cutouts/abc. */
+export function cutoutPublicIdFor(selfiePublicId: string): string {
+  return selfiePublicId.replace(/^selfies\//, "cutouts/");
+}
+
 /** Warm tint so the selfie sits in golden-hour light like the scene around it. */
 const GOLDEN_SELFIE_TINT = "e_tint:22:orange";
 
 /** Transformation steps that place the selfie layer for each style. */
 function selfieLayer(
   selfiePublicId: string,
+  cutoutPublicId: string | null | undefined,
   style: PostcardStyle,
   light: PostcardLight,
 ): string[] {
@@ -77,15 +94,11 @@ function selfieLayer(
   }
 
   return [
-    layer,
-    // Shrink first: modern phones shoot ~50 MP, and the free plan refuses
-    // transformations over 25 MP (background removal works at full size).
-    "c_limit,w_1600,h_1600",
-    // Remove the background, trim the empty space around the person, fit
-    // (never crop, so no straight cut edges at the sides), and stand it on
+    // The stored cut-out if there is one; otherwise cut out on the fly (costs a
+    // background removal for every distinct URL).
+    ...(cutoutPublicId ? [`l_${layerId(cutoutPublicId)}`] : [layer, CUTOUT_TRANSFORMATION]),
+    // Fit (never crop, so no straight cut edges at the sides) and stand it on
     // the bottom edge, right of centre.
-    "e_background_removal",
-    "e_trim",
     "c_fit,w_620,h_640",
     ...tint,
     "fl_layer_apply,g_south_east,x_90,y_0",
@@ -115,6 +128,7 @@ function textLayer(font: string, size: number, text: string): string {
 export function postcardUrl({
   cloudName,
   selfiePublicId,
+  cutoutPublicId,
   landmark,
   name,
   style = "cutout",
@@ -132,7 +146,7 @@ export function postcardUrl({
     `c_fill,g_auto,w_${POSTCARD_WIDTH},h_${POSTCARD_HEIGHT}`,
 
     // 2. The selfie, as a cut-out or a round portrait.
-    ...selfieLayer(selfiePublicId, style, light),
+    ...selfieLayer(selfiePublicId, cutoutPublicId, style, light),
 
     // 3. Caption, top left: a handwritten "Greetings from" over the place name
     //    set large in the display face, like a vintage postcard.

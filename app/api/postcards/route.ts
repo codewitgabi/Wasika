@@ -1,7 +1,7 @@
 import { randomInt } from "node:crypto";
 import { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
-import { isGenuineUpload, SELFIE_FOLDER } from "@/lib/cloudinary";
+import { createCutout, isGenuineUpload, SELFIE_FOLDER } from "@/lib/cloudinary";
 import { isLandmarkSlug } from "@/lib/landmarks";
 import { MESSAGE_MAX, NAME_MAX } from "@/lib/limits";
 
@@ -16,7 +16,13 @@ import { MESSAGE_MAX, NAME_MAX } from "@/lib/limits";
 //
 // Returns 201 { slug, url } where url is the share page.
 //
+// Also removes the selfie's background once and stores the cut-out, so the
+// postcard's images never pay for background removal again. That can take
+// several seconds, hence the longer time limit.
+//
 // TODO (before launch): rate limit per IP, as with /api/sign-upload.
+
+export const maxDuration = 60;
 
 
 const SLUG_ALPHABET = "abcdefghijkmnpqrstuvwxyz23456789"; // no 0/o, 1/l
@@ -85,6 +91,10 @@ export async function POST(request: Request) {
     return bad("isPublic must be true or false");
   }
 
+  // If this fails or times out, the postcard still works: its images just
+  // cut out on the fly (and cost a background removal per distinct URL).
+  const cutoutPublicId = await createCutout(publicId);
+
   // Random slugs rarely collide; retry a few times if one does.
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
@@ -95,6 +105,7 @@ export async function POST(request: Request) {
           name,
           message: message || null,
           selfiePublicId: publicId,
+          cutoutPublicId,
           isPublic: body.isPublic === true,
         },
         select: { slug: true },

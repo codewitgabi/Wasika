@@ -18,6 +18,9 @@ model Postcard {
   message        String?
   /// Cloudinary public_id of the uploaded selfie
   selfiePublicId String
+  /// Background-removed selfie (transparent PNG), made once at creation so
+  /// postcard URLs never re-run background removal. Null if that failed.
+  cutoutPublicId String?
   /// Opt-in to the public gallery; selfies are unlisted by default
   isPublic       Boolean  @default(false)
   createdAt      DateTime @default(now())

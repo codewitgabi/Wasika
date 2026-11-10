@@ -10,6 +10,7 @@ export type SavedPostcard = {
   name: string;
   message: string | null;
   selfiePublicId: string;
+  cutoutPublicId: string | null;
   createdAt: string;
 };
 
@@ -34,6 +35,7 @@ export async function getPostcard(slug: string): Promise<SavedPostcard | null> {
       name: true,
       message: true,
       selfiePublicId: true,
+      cutoutPublicId: true,
       createdAt: true,
     },
   });
