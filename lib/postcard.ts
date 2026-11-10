@@ -4,6 +4,7 @@
 
 import {
   getLandmark,
+  goldenPublicId,
   landmarkPublicId,
   type LandmarkSlug,
 } from "@/lib/landmarks";
@@ -38,13 +39,28 @@ export type PostcardInput = {
    * link previews (og:image), since some preview bots mishandle modern formats.
    */
   format?: "auto" | "jpg";
+  /**
+   * "day" (default) uses the landmark photo as taken. "golden" uses the
+   * golden-hour version (landmarks/golden/<slug>) and warms the selfie to match.
+   * Only for landmarks with `golden: true`.
+   */
+  light?: PostcardLight;
 };
 
 export type PostcardStyle = "cutout" | "portrait";
+export type PostcardLight = "day" | "golden";
+
+/** Warm tint so the selfie sits in golden-hour light like the scene around it. */
+const GOLDEN_SELFIE_TINT = "e_tint:22:orange";
 
 /** Transformation steps that place the selfie layer for each style. */
-function selfieLayer(selfiePublicId: string, style: PostcardStyle): string[] {
+function selfieLayer(
+  selfiePublicId: string,
+  style: PostcardStyle,
+  light: PostcardLight,
+): string[] {
   const layer = `l_${layerId(selfiePublicId)}`;
+  const tint = light === "golden" ? [GOLDEN_SELFIE_TINT] : [];
 
   if (style === "portrait") {
     return [
@@ -52,6 +68,7 @@ function selfieLayer(selfiePublicId: string, style: PostcardStyle): string[] {
       // Square crop around all faces (works for groups), zoomed out a little
       // so hair and chin aren't clipped, then made round with a white rim.
       "c_thumb,g_faces,w_400,h_400,z_0.75",
+      ...tint,
       // Radius and border in the same step, so the border follows the circle.
       "r_max,bo_10px_solid_white",
       "e_shadow:50,x_6,y_8",
@@ -70,6 +87,7 @@ function selfieLayer(selfiePublicId: string, style: PostcardStyle): string[] {
     "e_background_removal",
     "e_trim",
     "c_fit,w_620,h_640",
+    ...tint,
     "fl_layer_apply,g_south_east,x_90,y_0",
   ];
 }
@@ -101,16 +119,20 @@ export function postcardUrl({
   name,
   style = "cutout",
   format = "auto",
+  light = "day",
 }: PostcardInput): string {
   const place = getLandmark(landmark);
   if (!place) throw new Error(`Unknown landmark: ${landmark}`);
+  if (light === "golden" && !place.golden) {
+    throw new Error(`No golden-hour photo for ${landmark}; run pnpm landmarks:golden`);
+  }
 
   const steps = [
     // 1. Landmark photo fills the 3:2 postcard, cropped around its most interesting part.
     `c_fill,g_auto,w_${POSTCARD_WIDTH},h_${POSTCARD_HEIGHT}`,
 
     // 2. The selfie, as a cut-out or a round portrait.
-    ...selfieLayer(selfiePublicId, style),
+    ...selfieLayer(selfiePublicId, style, light),
 
     // 3. Caption, top left: a handwritten "Greetings from" over the place name
     //    set large in the display face, like a vintage postcard.
@@ -133,7 +155,8 @@ export function postcardUrl({
   // 4. White postcard border, then let Cloudinary pick format and quality.
   steps.push("bo_16px_solid_white", `f_${format},q_auto`);
 
-  return `https://res.cloudinary.com/${cloudName}/image/upload/${steps.join("/")}/${landmarkPublicId(landmark)}`;
+  const base = light === "golden" ? goldenPublicId(landmark) : landmarkPublicId(landmark);
+  return `https://res.cloudinary.com/${cloudName}/image/upload/${steps.join("/")}/${base}`;
 }
 
 /** A small crop of a landmark photo, e.g. for the stamp on the card back. */

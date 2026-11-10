@@ -114,8 +114,18 @@ async function Postcard({
       </h1>
 
       <PostcardImage
-        cutoutUrl={postcardUrl({ ...base, style: "cutout" })}
-        portraitUrl={postcardUrl({ ...base, style: "portrait" })}
+        day={{
+          cutout: postcardUrl({ ...base, style: "cutout" }),
+          portrait: postcardUrl({ ...base, style: "portrait" }),
+        }}
+        golden={
+          landmark.golden
+            ? {
+                cutout: postcardUrl({ ...base, style: "cutout", light: "golden" }),
+                portrait: postcardUrl({ ...base, style: "portrait", light: "golden" }),
+              }
+            : undefined
+        }
         alt={`${postcard.name} at ${landmark.name}`}
         width={IMAGE_WIDTH}
         height={IMAGE_HEIGHT}

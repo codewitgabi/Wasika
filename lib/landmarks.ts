@@ -17,11 +17,14 @@ export type Landmark = {
   coords: { lat: number; lon: number } | null;
   /** Which side of the pin the map label sits on, to avoid overlaps. */
   labelSide: "left" | "right";
+  /** True once `pnpm landmarks:golden` has made landmarks/golden/<slug>. */
+  golden: boolean;
 };
 
 export const LANDMARKS = [
   {
     slug: "zuma-rock",
+    golden: false,
     coords: { lat: 9.1303, lon: 7.2339 },
     labelSide: "left",
     name: "Zuma Rock",
@@ -34,6 +37,7 @@ export const LANDMARKS = [
   },
   {
     slug: "gurara-falls",
+    golden: true,
     coords: { lat: 9.3144, lon: 7.0211 },
     labelSide: "left",
     name: "Gurara Falls",
@@ -45,6 +49,7 @@ export const LANDMARKS = [
   },
   {
     slug: "kainji-lake",
+    golden: false,
     coords: { lat: 10.3667, lon: 4.55 },
     labelSide: "right",
     name: "Kainji Lake",
@@ -57,6 +62,7 @@ export const LANDMARKS = [
   },
   {
     slug: "zungeru-dam",
+    golden: false,
     coords: { lat: 9.905, lon: 6.2922 },
     labelSide: "right",
     name: "Zungeru Dam",
@@ -69,6 +75,7 @@ export const LANDMARKS = [
   },
   {
     slug: "juju-rock",
+    golden: false,
     coords: null, // TODO: location unknown; no Wikipedia entry,
     labelSide: "right",
     name: "Juju Rock",
@@ -94,4 +101,9 @@ export function getLandmark(slug: string): Landmark | undefined {
 /** Cloudinary public_id of the landmark photo, uploaded by `pnpm landmarks:upload`. */
 export function landmarkPublicId(slug: LandmarkSlug): string {
   return `landmarks/${slug}`;
+}
+
+/** Cloudinary public_id of the golden-hour version, made by `pnpm landmarks:golden`. */
+export function goldenPublicId(slug: LandmarkSlug): string {
+  return `landmarks/golden/${slug}`;
 }
