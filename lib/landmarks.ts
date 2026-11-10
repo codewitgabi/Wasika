@@ -6,9 +6,12 @@ export type Landmark = {
   name: string;
   /** Local government area in Niger State */
   area: string;
-  /** One-line English story. Full stories come in M3. */
+  /**
+   * Short English story (2-3 sentences), printed on the card back and used by
+   * the story map. DRAFT: facts to be checked before launch.
+   */
   storyEn: string;
-  /** Hausa story. Left empty until written or proofread by a Hausa speaker. */
+  /** Hausa story. Left empty until written by a Hausa speaker. */
   storyHa: string | null;
 };
 
@@ -18,7 +21,9 @@ export const LANDMARKS = [
     name: "Zuma Rock",
     area: "Suleja",
     storyEn:
-      "A giant granite monolith beside the Abuja-Kaduna road, pictured on the 100 naira note.",
+      "A giant granite monolith that rises beside the Abuja-Kaduna road, often called the gateway to Abuja. " +
+      "Look closely and you may see a face in the rock. The Gbagyi people once took refuge on it in times of war, " +
+      "and it appears on the 100 naira note.",
     storyHa: null,
   },
   {
@@ -26,7 +31,8 @@ export const LANDMARKS = [
     name: "Gurara Falls",
     area: "Gurara",
     storyEn:
-      "The Gurara River tumbles over a wide rock ledge, at its fullest in the rainy season.",
+      "The Gurara River spills over a long, stepped ledge of rock in wide white curtains. " +
+      "The falls are at their fullest late in the rainy season, and a favourite spot for picnics and day trips.",
     storyHa: null,
   },
   {
@@ -34,7 +40,9 @@ export const LANDMARKS = [
     name: "Kainji Lake",
     area: "Borgu",
     storyEn:
-      "A vast lake on the River Niger, formed by the Kainji Dam and bordered by Kainji Lake National Park.",
+      "When the Kainji Dam closed the River Niger in the 1960s, it made one of Nigeria's largest lakes. " +
+      "The waters covered old Bussa, near the rapids where the explorer Mungo Park drowned in 1806. " +
+      "Today the lake borders Kainji Lake National Park.",
     storyHa: null,
   },
   {
@@ -42,13 +50,15 @@ export const LANDMARKS = [
     name: "Zungeru Dam",
     area: "Wushishi",
     storyEn:
-      "A hydroelectric dam on the Kaduna River near Zungeru, the old capital of Northern Nigeria.",
+      "One of Nigeria's newest and largest hydropower dams, on the Kaduna River. " +
+      "Nearby Zungeru was the capital of the Northern Nigeria Protectorate in the early 1900s, " +
+      "and the birthplace of Nnamdi Azikiwe, Nigeria's first president.",
     storyHa: null,
   },
   {
     slug: "juju-rock",
     name: "Juju Rock",
-    // TODO: confirm the local government area and write the one-line story.
+    // TODO: confirm the local government area and write the story.
     area: "",
     storyEn: "",
     storyHa: null,
