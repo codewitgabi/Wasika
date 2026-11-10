@@ -1,9 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { CldUploadWidget } from "next-cloudinary";
-import { LANDMARKS, type LandmarkSlug } from "@/lib/landmarks";
+import { LANDMARKS, isLandmarkSlug, type LandmarkSlug } from "@/lib/landmarks";
 import { MESSAGE_MAX, NAME_MAX } from "@/lib/limits";
 import { landmarkThumbUrl } from "@/lib/postcard";
 
@@ -19,8 +19,12 @@ function selfiePreviewUrl(publicId: string) {
 
 export function CreateForm() {
   const router = useRouter();
+  // "Make a postcard here" on the story map links to /?place=<slug>.
+  const place = useSearchParams().get("place");
   const [upload, setUpload] = useState<Upload | null>(null);
-  const [landmark, setLandmark] = useState<LandmarkSlug | null>(null);
+  const [landmark, setLandmark] = useState<LandmarkSlug | null>(
+    place && isLandmarkSlug(place) ? place : null,
+  );
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
   const [isPublic, setIsPublic] = useState(false);

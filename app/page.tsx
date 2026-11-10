@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Suspense } from "react";
 import { CreateForm } from "./create-form";
 
@@ -14,6 +15,12 @@ export default function Home() {
           Upload a selfie and pick a landmark. We&rsquo;ll put you at Zuma Rock,
           Gurara Falls or Kainji Lake, and give you a link to send home.
         </p>
+        <Link
+          href="/map"
+          className="self-start text-earth underline decoration-earth/40 underline-offset-4 hover:decoration-earth"
+        >
+          Read the stories behind each place
+        </Link>
       </header>
 
       {/* next-cloudinary's upload widget calls Math.random() while rendering,

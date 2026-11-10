@@ -13,11 +13,17 @@ export type Landmark = {
   storyEn: string;
   /** Hausa story. Left empty until written by a Hausa speaker. */
   storyHa: string | null;
+  /** Where the pin goes on the story map (from Wikipedia); null hides the pin. */
+  coords: { lat: number; lon: number } | null;
+  /** Which side of the pin the map label sits on, to avoid overlaps. */
+  labelSide: "left" | "right";
 };
 
 export const LANDMARKS = [
   {
     slug: "zuma-rock",
+    coords: { lat: 9.1303, lon: 7.2339 },
+    labelSide: "left",
     name: "Zuma Rock",
     area: "Suleja",
     storyEn:
@@ -28,6 +34,8 @@ export const LANDMARKS = [
   },
   {
     slug: "gurara-falls",
+    coords: { lat: 9.3144, lon: 7.0211 },
+    labelSide: "left",
     name: "Gurara Falls",
     area: "Gurara",
     storyEn:
@@ -37,6 +45,8 @@ export const LANDMARKS = [
   },
   {
     slug: "kainji-lake",
+    coords: { lat: 10.3667, lon: 4.55 },
+    labelSide: "right",
     name: "Kainji Lake",
     area: "Borgu",
     storyEn:
@@ -47,6 +57,8 @@ export const LANDMARKS = [
   },
   {
     slug: "zungeru-dam",
+    coords: { lat: 9.905, lon: 6.2922 },
+    labelSide: "right",
     name: "Zungeru Dam",
     area: "Wushishi",
     storyEn:
@@ -57,6 +69,8 @@ export const LANDMARKS = [
   },
   {
     slug: "juju-rock",
+    coords: null, // TODO: location unknown; no Wikipedia entry,
+    labelSide: "right",
     name: "Juju Rock",
     // TODO: confirm the local government area and write the story.
     area: "",

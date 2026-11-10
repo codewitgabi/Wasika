@@ -45,6 +45,7 @@ Cloudinary values are under **Console > Settings > API Keys**.
 | `pnpm db:deploy` | Apply existing migrations (production) |
 | `pnpm db:generate` | Regenerate the Prisma client (also runs on `pnpm install`) |
 | `pnpm db:studio` | Browse the database in Prisma Studio |
+| `pnpm map:build` | Regenerate `lib/map-data.ts` (story map outlines) from the pinned boundary dataset |
 | `pnpm fonts:upload` | Upload the postcard caption fonts in `assets/fonts/` to Cloudinary (needed once per Cloudinary account) |
 | `pnpm landmarks:upload [slug...]` | Upload the photos in `assets/landmarks/` to Cloudinary as `landmarks/<slug>` (all landmarks, or only the ones named) |
 
@@ -56,10 +57,13 @@ app/create-form.tsx  Home page flow: upload a selfie, pick a place, sign it
 app/api/sign-upload/ Signs selfie uploads for the Cloudinary upload widget
 app/api/postcards/   Creates a postcard record from a verified upload
 app/p/[slug]/        Share page for a postcard (with link-preview tags)
+app/map/             Story map: the five places on a map of Niger State, with their stories
 lib/cloudinary.ts    Server-side Cloudinary config (server only)
 lib/db.ts            Shared Prisma client (Neon adapter)
 lib/landmarks.ts     The five landmarks and their stories (static config)
 lib/limits.ts        Name and message length limits (form and API)
+lib/map.ts           Projects coordinates onto the story map
+lib/map-data.ts      Generated SVG outlines for the map (do not edit; see map:build)
 lib/postcard.ts      Builds the postcard image as a Cloudinary transformation URL
 lib/postcards.ts     Cached postcard lookup by slug
 lib/site.ts          Absolute site URL for metadata
@@ -68,7 +72,7 @@ prisma/migrations/   Migration history (committed)
 prisma.config.ts     Prisma CLI config: env loading and connection URL
 assets/landmarks/    Source landmark photos, one per slug
 assets/fonts/        Caption fonts for the postcard image (SIL Open Font License)
-scripts/             One-off scripts (landmark and font uploads, postcard URL)
+scripts/             One-off scripts (uploads, postcard URL, map build)
 generated/prisma/    Generated Prisma client (gitignored)
 ```
 
@@ -80,3 +84,9 @@ Deployed on Vercel from GitHub. `vercel.json` pins server functions to Frankfurt
 2. Add all the variables from `.env.example` under **Settings > Environment Variables**.
 3. Also add `ENABLE_EXPERIMENTAL_COREPACK=1` so Vercel builds with the pnpm version pinned in `package.json`.
 4. Migrations don't run on deploy. After a schema change, run `pnpm db:deploy` against the production database.
+
+## Credits
+
+- Map boundaries: GRID3 Nigeria state boundaries (2022), via [geoBoundaries](https://www.geoboundaries.org), CC BY 4.0.
+- Landmark coordinates: Wikipedia.
+- Fonts: Charis SIL (SIL International) and Playpen Sans (TypeTogether), SIL Open Font License.

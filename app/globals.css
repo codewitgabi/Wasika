@@ -65,3 +65,20 @@ body {
     animation: none;
   }
 }
+
+/* Story map: labels get a card-coloured halo so they stay legible over borders. */
+.map-label {
+  paint-order: stroke;
+  stroke: var(--color-card);
+  stroke-width: 8px;
+  stroke-linejoin: round;
+}
+
+.map-pin:focus-visible {
+  outline: none;
+}
+
+.map-pin:focus-visible circle,
+.map-pin:hover circle {
+  fill: var(--color-sun);
+}
