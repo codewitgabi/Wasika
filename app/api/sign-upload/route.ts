@@ -1,4 +1,5 @@
 import { cloudinary, getApiSecret, SELFIE_FOLDER } from "@/lib/cloudinary";
+import { rateLimit } from "@/lib/rate-limit";
 
 // Signs upload parameters for the Cloudinary upload widget (next-cloudinary's
 // `signatureEndpoint`). The widget POSTs { paramsToSign } and expects
@@ -8,9 +9,7 @@ import { cloudinary, getApiSecret, SELFIE_FOLDER } from "@/lib/cloudinary";
 // timestamp, the widget's `source` marker, and the fixed selfie folder. Any
 // other parameter (public_id, overwrite, type, transformations...) is refused,
 // so a signature from here can't be reused to write anywhere else in the account.
-//
-// TODO (before launch): rate limit per IP. In-memory counters don't survive
-// across serverless instances, so this needs a shared store.
+// Rate limited per IP (lib/rate-limit.ts).
 
 const ALLOWED_PARAMS = new Set(["timestamp", "source", "folder"]);
 const MAX_CLOCK_SKEW_SECONDS = 10 * 60;
@@ -22,6 +21,9 @@ function bad(message: string) {
 }
 
 export async function POST(request: Request) {
+  const limited = await rateLimit("sign-upload", request);
+  if (limited) return limited;
+
   let body: SignRequest;
   try {
     body = await request.json();

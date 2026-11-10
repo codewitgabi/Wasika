@@ -27,3 +27,12 @@ model Postcard {
 
   @@index([isPublic, createdAt])
 }
+
+/// Fixed-window request counters for lib/rate-limit.ts, shared by every
+/// serverless instance. One row per route and client IP, reused each window.
+model RateLimit {
+  /// "<route>:<ip>", e.g. "cutouts:203.0.113.7"
+  key         String   @id
+  count       Int
+  windowStart DateTime
+}

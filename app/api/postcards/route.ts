@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { createCutout, verifySelfieUpload } from "@/lib/cloudinary";
 import { isLandmarkSlug } from "@/lib/landmarks";
 import { MESSAGE_MAX, NAME_MAX } from "@/lib/limits";
+import { rateLimit } from "@/lib/rate-limit";
 
 // Creates a postcard from a finished selfie upload.
 //
@@ -18,12 +19,10 @@ import { MESSAGE_MAX, NAME_MAX } from "@/lib/limits";
 //
 // Also removes the selfie's background once and stores the cut-out, so the
 // postcard's images never pay for background removal again. That can take
-// several seconds, hence the longer time limit.
-//
-// TODO (before launch): rate limit per IP, as with /api/sign-upload.
+// several seconds, hence the longer time limit. Rate limited per IP
+// (lib/rate-limit.ts).
 
 export const maxDuration = 60;
-
 
 const SLUG_ALPHABET = "abcdefghijkmnpqrstuvwxyz23456789"; // no 0/o, 1/l
 const SLUG_LENGTH = 8;
@@ -44,6 +43,9 @@ function cleanText(value: unknown): string {
 }
 
 export async function POST(request: Request) {
+  const limited = await rateLimit("postcards", request);
+  if (limited) return limited;
+
   let body: Record<string, unknown>;
   try {
     const parsed = await request.json();
