@@ -1,26 +1,67 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/*
+ * Palette drawn from Niger State:
+ *   sun     – kola tangerine, the page
+ *   earth   – dark kola-nut brown: text on the sun background
+ *   card    – postcard stock (only ever the card itself)
+ *   indigo  – adire dye / fountain-pen ink: handwriting, postmarks, primary action
+ *   brass   – Nupe brasswork: stamp frame
+ *   granite – Zuma Rock grey: printed small text on the card
+ */
+@theme {
+  --color-sun: #f28a1e;
+  --color-sun-deep: #de7a12;
+  --color-earth: #2b1608;
+  --color-card: #f4efe3;
+  --color-stamp: #fffdf8;
+  --color-indigo: #1e2b63;
+  --color-brass: #c9962e;
+  --color-granite: #5f6663;
+
+  --font-serif: var(--font-charis), Georgia, serif;
+  --font-hand: var(--font-playpen), "Segoe Print", cursive;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  background: var(--color-sun);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-sun);
+  color: var(--color-earth);
+  font-family: var(--font-serif);
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-indigo);
+  outline-offset: 3px;
+}
+
+/* The one motion on the page: the postmark is pressed onto the stamp. */
+@keyframes postmark-press {
+  0% {
+    opacity: 0;
+    transform: scale(1.35) rotate(-14deg);
+  }
+  60% {
+    opacity: 0.9;
+    transform: scale(0.97) rotate(-9deg);
+  }
+  100% {
+    opacity: 0.8;
+    transform: scale(1) rotate(-10deg);
+  }
+}
+
+.postmark {
+  opacity: 0.8;
+  transform: rotate(-10deg);
+  animation: postmark-press 420ms cubic-bezier(0.2, 0.7, 0.3, 1) 500ms both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .postmark {
+    animation: none;
+  }
 }

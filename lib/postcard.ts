@@ -23,6 +23,11 @@ export type PostcardInput = {
    * face crop with a white rim, no background removal.
    */
   style?: PostcardStyle;
+  /**
+   * "auto" (default) lets Cloudinary pick WebP/AVIF per browser. "jpg" is for
+   * link previews (og:image), since some preview bots mishandle modern formats.
+   */
+  format?: "auto" | "jpg";
 };
 
 export type PostcardStyle = "cutout" | "portrait";
@@ -77,6 +82,7 @@ export function postcardUrl({
   landmark,
   name,
   style = "cutout",
+  format = "auto",
 }: PostcardInput): string {
   const place = getLandmark(landmark);
   if (!place) throw new Error(`Unknown landmark: ${landmark}`);
@@ -103,7 +109,17 @@ export function postcardUrl({
   }
 
   // 4. White postcard border, then let Cloudinary pick format and quality.
-  steps.push("bo_16px_solid_white", "f_auto,q_auto");
+  steps.push("bo_16px_solid_white", `f_${format},q_auto`);
 
   return `https://res.cloudinary.com/${cloudName}/image/upload/${steps.join("/")}/${landmarkPublicId(landmark)}`;
+}
+
+/** A small crop of a landmark photo, e.g. for the stamp on the card back. */
+export function landmarkThumbUrl(
+  cloudName: string,
+  landmark: LandmarkSlug,
+  width: number,
+  height: number,
+): string {
+  return `https://res.cloudinary.com/${cloudName}/image/upload/c_fill,g_auto,w_${width},h_${height}/f_auto,q_auto/${landmarkPublicId(landmark)}`;
 }

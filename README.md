@@ -53,9 +53,13 @@ Cloudinary values are under **Console > Settings > API Keys**.
 app/                 Next.js routes
 app/api/sign-upload/ Signs selfie uploads for the Cloudinary upload widget
 app/api/postcards/   Creates a postcard record from a verified upload
+app/p/[slug]/        Share page for a postcard (with link-preview tags)
 lib/cloudinary.ts    Server-side Cloudinary config (server only)
 lib/db.ts            Shared Prisma client (Neon adapter)
 lib/landmarks.ts     The five landmarks and their stories (static config)
+lib/postcard.ts      Builds the postcard image as a Cloudinary transformation URL
+lib/postcards.ts     Cached postcard lookup by slug
+lib/site.ts          Absolute site URL for metadata
 prisma/schema.prisma Database schema
 prisma/migrations/   Migration history (committed)
 prisma.config.ts     Prisma CLI config: env loading and connection URL
