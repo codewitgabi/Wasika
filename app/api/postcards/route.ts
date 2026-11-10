@@ -3,6 +3,7 @@ import { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
 import { isGenuineUpload, SELFIE_FOLDER } from "@/lib/cloudinary";
 import { isLandmarkSlug } from "@/lib/landmarks";
+import { MESSAGE_MAX, NAME_MAX } from "@/lib/limits";
 
 // Creates a postcard from a finished selfie upload.
 //
@@ -17,8 +18,6 @@ import { isLandmarkSlug } from "@/lib/landmarks";
 //
 // TODO (before launch): rate limit per IP, as with /api/sign-upload.
 
-const NAME_MAX = 40;
-const MESSAGE_MAX = 200;
 
 const SLUG_ALPHABET = "abcdefghijkmnpqrstuvwxyz23456789"; // no 0/o, 1/l
 const SLUG_LENGTH = 8;

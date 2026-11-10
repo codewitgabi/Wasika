@@ -51,12 +51,14 @@ Cloudinary values are under **Console > Settings > API Keys**.
 
 ```
 app/                 Next.js routes
+app/create-form.tsx  Home page flow: upload a selfie, pick a place, sign it
 app/api/sign-upload/ Signs selfie uploads for the Cloudinary upload widget
 app/api/postcards/   Creates a postcard record from a verified upload
 app/p/[slug]/        Share page for a postcard (with link-preview tags)
 lib/cloudinary.ts    Server-side Cloudinary config (server only)
 lib/db.ts            Shared Prisma client (Neon adapter)
 lib/landmarks.ts     The five landmarks and their stories (static config)
+lib/limits.ts        Name and message length limits (form and API)
 lib/postcard.ts      Builds the postcard image as a Cloudinary transformation URL
 lib/postcards.ts     Cached postcard lookup by slug
 lib/site.ts          Absolute site URL for metadata
