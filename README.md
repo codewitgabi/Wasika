@@ -45,6 +45,7 @@ Cloudinary values are under **Console > Settings > API Keys**.
 | `pnpm db:deploy` | Apply existing migrations (production) |
 | `pnpm db:generate` | Regenerate the Prisma client (also runs on `pnpm install`) |
 | `pnpm db:studio` | Browse the database in Prisma Studio |
+| `pnpm fonts:upload` | Upload the postcard caption fonts in `assets/fonts/` to Cloudinary (needed once per Cloudinary account) |
 | `pnpm landmarks:upload [slug...]` | Upload the photos in `assets/landmarks/` to Cloudinary as `landmarks/<slug>` (all landmarks, or only the ones named) |
 
 ## Project layout
@@ -66,7 +67,8 @@ prisma/schema.prisma Database schema
 prisma/migrations/   Migration history (committed)
 prisma.config.ts     Prisma CLI config: env loading and connection URL
 assets/landmarks/    Source landmark photos, one per slug
-scripts/             One-off scripts (landmark upload)
+assets/fonts/        Caption fonts for the postcard image (SIL Open Font License)
+scripts/             One-off scripts (landmark and font uploads, postcard URL)
 generated/prisma/    Generated Prisma client (gitignored)
 ```
 

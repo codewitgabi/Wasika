@@ -8,11 +8,8 @@
 
 import { existsSync, statSync } from "node:fs";
 import path from "node:path";
-import { config } from "dotenv";
-import { v2 as cloudinary } from "cloudinary";
 import { LANDMARKS, isLandmarkSlug, landmarkPublicId } from "@/lib/landmarks";
-
-config({ path: [".env.local", ".env"], quiet: true });
+import { configuredCloudinary, errorMessage } from "./cloudinary-env";
 
 const ASSET_DIR = path.join(process.cwd(), "assets", "landmarks");
 const EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"];
@@ -56,18 +53,7 @@ async function main() {
     process.exit(1);
   }
 
-  const { NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME, NEXT_PUBLIC_CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } =
-    process.env;
-  if (!NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || !NEXT_PUBLIC_CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
-    console.error("Cloudinary env vars are missing. Fill them in .env.local (see .env.example).");
-    process.exit(1);
-  }
-  cloudinary.config({
-    cloud_name: NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-    api_key: NEXT_PUBLIC_CLOUDINARY_API_KEY,
-    api_secret: CLOUDINARY_API_SECRET,
-    secure: true,
-  });
+  const cloudinary = configuredCloudinary();
 
   let failed = 0;
   for (const { slug, file } of ready) {
@@ -85,8 +71,7 @@ async function main() {
       }
     } catch (error) {
       failed++;
-      const message = (error as { message?: string })?.message ?? String(error);
-      console.error(`✘ ${slug}: ${message}`);
+      console.error(`✘ ${slug}: ${errorMessage(error)}`);
     }
   }
 

@@ -75,6 +75,10 @@ export function CreateForm() {
             multiple: false,
             maxFiles: 1,
             maxFileSize: 10_000_000, // Cloudinary free plan image limit
+            // Resize in the browser before upload: phones shoot ~50 MP, which
+            // is slow to send and over the free plan's 25 MP transform limit.
+            maxImageWidth: 2000,
+            maxImageHeight: 2000,
             clientAllowedFormats: ["jpg", "jpeg", "png", "webp", "heic"],
           }}
           onSuccess={(result, { widget }) => {

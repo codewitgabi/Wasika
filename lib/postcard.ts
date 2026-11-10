@@ -11,6 +11,16 @@ import {
 export const POSTCARD_WIDTH = 1200;
 export const POSTCARD_HEIGHT = 800;
 
+/**
+ * Custom fonts for the captions, uploaded by `pnpm fonts:upload` as raw,
+ * authenticated Cloudinary assets. Same faces as the site, and unlike Arial
+ * they cover Hausa's hooked letters (ɓ ɗ ƙ).
+ */
+export const POSTCARD_FONTS = {
+  display: "fonts/CharisSIL-Bold.ttf",
+  hand: "fonts/PlaypenSans-Medium.ttf",
+} as const;
+
 export type PostcardInput = {
   cloudName: string;
   selfiePublicId: string;
@@ -51,6 +61,9 @@ function selfieLayer(selfiePublicId: string, style: PostcardStyle): string[] {
 
   return [
     layer,
+    // Shrink first: modern phones shoot ~50 MP, and the free plan refuses
+    // transformations over 25 MP (background removal works at full size).
+    "c_limit,w_1600,h_1600",
     // Remove the background, trim the empty space around the person, fit
     // (never crop, so no straight cut edges at the sides), and stand it on
     // the bottom edge, right of centre.
@@ -76,6 +89,11 @@ function layerText(text: string): string {
     .replace(/%2F/gi, "%252F");
 }
 
+/** A white text overlay in one of the uploaded fonts. */
+function textLayer(font: string, size: number, text: string): string {
+  return `l_text:${layerId(font)}_${size}:${layerText(text)},co_white`;
+}
+
 export function postcardUrl({
   cloudName,
   selfiePublicId,
@@ -94,17 +112,21 @@ export function postcardUrl({
     // 2. The selfie, as a cut-out or a round portrait.
     ...selfieLayer(selfiePublicId, style),
 
-    // 3. Caption, top left.
-    `l_text:Arial_60_bold:${layerText(`Greetings from ${place.name}`)},co_white`,
-    "e_shadow:60,x_2,y_2",
-    "fl_layer_apply,g_north_west,x_48,y_44",
+    // 3. Caption, top left: a handwritten "Greetings from" over the place name
+    //    set large in the display face, like a vintage postcard.
+    textLayer(POSTCARD_FONTS.hand, 40, "Greetings from"),
+    "e_shadow:50,x_2,y_2",
+    "fl_layer_apply,g_north_west,x_50,y_40",
+    textLayer(POSTCARD_FONTS.display, 88, place.name),
+    "e_shadow:50,x_3,y_3",
+    "fl_layer_apply,g_north_west,x_46,y_88",
   ];
 
   if (name?.trim()) {
     steps.push(
-      `l_text:Arial_40_italic:${layerText(`Love, ${name.trim()}`)},co_white`,
-      "e_shadow:60,x_2,y_2",
-      "fl_layer_apply,g_south_west,x_48,y_40",
+      textLayer(POSTCARD_FONTS.hand, 44, `Love, ${name.trim()}`),
+      "e_shadow:50,x_2,y_2",
+      "fl_layer_apply,g_south_west,x_50,y_40",
     );
   }
 
