@@ -1,7 +1,8 @@
 // Prints a postcard URL for manual testing (M1).
 //
-//   pnpm postcard:url <selfie-public-id> <landmark-slug> [name]
+//   pnpm postcard:url <selfie-public-id> <landmark-slug> [name] [--portrait]
 //   pnpm postcard:url selfies/abc123 zuma-rock Amina
+//   pnpm postcard:url selfies/abc123 zuma-rock Amina --portrait
 
 import { config } from "dotenv";
 import { LANDMARKS, isLandmarkSlug } from "@/lib/landmarks";
@@ -9,12 +10,14 @@ import { postcardUrl } from "@/lib/postcard";
 
 config({ path: [".env.local", ".env"], quiet: true });
 
-const [selfiePublicId, landmark, name] = process.argv.slice(2);
+const args = process.argv.slice(2);
+const style = args.includes("--portrait") ? "portrait" : "cutout";
+const [selfiePublicId, landmark, name] = args.filter((a) => !a.startsWith("--"));
 const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
 
 if (!selfiePublicId || !landmark) {
   console.error(
-    "Usage: pnpm postcard:url <selfie-public-id> <landmark-slug> [name]",
+    "Usage: pnpm postcard:url <selfie-public-id> <landmark-slug> [name] [--portrait]",
   );
   process.exit(1);
 }
@@ -29,4 +32,4 @@ if (!cloudName) {
   process.exit(1);
 }
 
-console.log(postcardUrl({ cloudName, selfiePublicId, landmark, name }));
+console.log(postcardUrl({ cloudName, selfiePublicId, landmark, name, style }));

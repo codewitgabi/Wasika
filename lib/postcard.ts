@@ -17,7 +17,44 @@ export type PostcardInput = {
   landmark: LandmarkSlug;
   /** Optional sign-off, e.g. "Amina" renders as "Love, Amina" */
   name?: string;
+  /**
+   * "cutout" (default): background removed, person stands in the scene.
+   * "portrait": fallback when the cut-out fails or looks wrong; a round
+   * face crop with a white rim, no background removal.
+   */
+  style?: PostcardStyle;
 };
+
+export type PostcardStyle = "cutout" | "portrait";
+
+/** Transformation steps that place the selfie layer for each style. */
+function selfieLayer(selfiePublicId: string, style: PostcardStyle): string[] {
+  const layer = `l_${layerId(selfiePublicId)}`;
+
+  if (style === "portrait") {
+    return [
+      layer,
+      // Square crop around all faces (works for groups), zoomed out a little
+      // so hair and chin aren't clipped, then made round with a white rim.
+      "c_thumb,g_faces,w_400,h_400,z_0.75",
+      // Radius and border in the same step, so the border follows the circle.
+      "r_max,bo_10px_solid_white",
+      "e_shadow:50,x_6,y_8",
+      "fl_layer_apply,g_south_east,x_110,y_90",
+    ];
+  }
+
+  return [
+    layer,
+    // Remove the background, trim the empty space around the person, fit
+    // (never crop, so no straight cut edges at the sides), and stand it on
+    // the bottom edge, right of centre.
+    "e_background_removal",
+    "e_trim",
+    "c_fit,w_620,h_640",
+    "fl_layer_apply,g_south_east,x_90,y_0",
+  ];
+}
 
 /** A public_id used inside a layer (l_) writes folder slashes as colons. */
 function layerId(publicId: string): string {
@@ -39,6 +76,7 @@ export function postcardUrl({
   selfiePublicId,
   landmark,
   name,
+  style = "cutout",
 }: PostcardInput): string {
   const place = getLandmark(landmark);
   if (!place) throw new Error(`Unknown landmark: ${landmark}`);
@@ -47,14 +85,8 @@ export function postcardUrl({
     // 1. Landmark photo fills the 3:2 postcard, cropped around its most interesting part.
     `c_fill,g_auto,w_${POSTCARD_WIDTH},h_${POSTCARD_HEIGHT}`,
 
-    // 2. Selfie: remove the background, trim the empty space around the person,
-    //    fit (never crop, so no straight cut edges at the sides), and stand it
-    //    on the bottom edge, right of centre.
-    `l_${layerId(selfiePublicId)}`,
-    "e_background_removal",
-    "e_trim",
-    "c_fit,w_620,h_640",
-    "fl_layer_apply,g_south_east,x_90,y_0",
+    // 2. The selfie, as a cut-out or a round portrait.
+    ...selfieLayer(selfiePublicId, style),
 
     // 3. Caption, top left.
     `l_text:Arial_60_bold:${layerText(`Greetings from ${place.name}`)},co_white`,
