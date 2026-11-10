@@ -125,16 +125,15 @@ function textLayer(font: string, size: number, text: string): string {
   return `l_text:${layerId(font)}_${size}:${layerText(text)},co_white`;
 }
 
-export function postcardUrl({
-  cloudName,
-  selfiePublicId,
-  cutoutPublicId,
-  landmark,
-  name,
-  style = "cutout",
-  format = "auto",
-  light = "day",
-}: PostcardInput): string {
+/**
+ * The composed postcard (landmark, selfie, captions, border) as transformation
+ * steps plus the base image. Shared by the still image and the video.
+ * `gravity` is "auto" for stills; zoompan (video) can't be chained with g_auto.
+ */
+function postcardSteps(
+  { selfiePublicId, cutoutPublicId, landmark, name, style = "cutout", light = "day" }: PostcardInput,
+  gravity: "auto" | "center",
+): { steps: string[]; base: string } {
   const place = getLandmark(landmark);
   if (!place) throw new Error(`Unknown landmark: ${landmark}`);
   if (light === "golden" && !place.golden) {
@@ -143,7 +142,7 @@ export function postcardUrl({
 
   const steps = [
     // 1. Landmark photo fills the 3:2 postcard, cropped around its most interesting part.
-    `c_fill,g_auto,w_${POSTCARD_WIDTH},h_${POSTCARD_HEIGHT}`,
+    `c_fill,g_${gravity},w_${POSTCARD_WIDTH},h_${POSTCARD_HEIGHT}`,
 
     // 2. The selfie, as a cut-out or a round portrait.
     ...selfieLayer(selfiePublicId, cutoutPublicId, style, light),
@@ -166,11 +165,43 @@ export function postcardUrl({
     );
   }
 
-  // 4. White postcard border, then let Cloudinary pick format and quality.
-  steps.push("bo_16px_solid_white", `f_${format},q_auto`);
+  // 4. White postcard border.
+  steps.push("bo_16px_solid_white");
 
   const base = light === "golden" ? goldenPublicId(landmark) : landmarkPublicId(landmark);
-  return `https://res.cloudinary.com/${cloudName}/image/upload/${steps.join("/")}/${base}`;
+  return { steps, base };
+}
+
+export function postcardUrl(input: PostcardInput): string {
+  const { steps, base } = postcardSteps(input, "auto");
+  // Let Cloudinary pick format and quality.
+  steps.push(`f_${input.format ?? "auto"},q_auto`);
+  return `https://res.cloudinary.com/${input.cloudName}/image/upload/${steps.join("/")}/${base}`;
+}
+
+/** Video postcard length, in seconds. */
+export const POSTCARD_VIDEO_SECONDS = 6;
+export const POSTCARD_VIDEO_WIDTH = 640;
+
+/**
+ * The postcard as a 6-second MP4: starts close on the person (right of
+ * centre, below the caption) and pulls back to reveal the whole card. Made
+ * from the still with zoompan, so no video footage is needed. Rendered on
+ * demand only. `download` adds a Content-Disposition so it saves as a file.
+ */
+export function postcardVideoUrl(input: PostcardInput, { download = false } = {}): string {
+  const { steps, base } = postcardSteps(input, "center");
+  steps.push(
+    // Start at 2x on the right half: the frame is then half the card wide, so
+    // its left edge (50%) clears the caption (ends ~47%) and the head is in.
+    // zoompan clamps the frame inside the image, so x can't go past 0.75.
+    `e_zoompan:from_(zoom_2;x_0.75;y_0.42);to_(zoom_1);du_${POSTCARD_VIDEO_SECONDS};fps_30`,
+    // Sharp output needs width <= image width / max zoom (1232 / 2 = 616).
+    `c_scale,w_${POSTCARD_VIDEO_WIDTH}`,
+    "q_auto",
+    ...(download ? ["fl_attachment:postcard"] : []),
+  );
+  return `https://res.cloudinary.com/${input.cloudName}/image/upload/${steps.join("/")}/${base}.mp4`;
 }
 
 /** A small crop of a landmark photo, e.g. for the stamp on the card back. */

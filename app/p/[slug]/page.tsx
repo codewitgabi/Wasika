@@ -8,10 +8,13 @@ import {
   POSTCARD_WIDTH,
   landmarkThumbUrl,
   postcardUrl,
+  postcardVideoUrl,
+  type PostcardInput,
+  type PostcardLight,
 } from "@/lib/postcard";
 import { getPostcard, type SavedPostcard } from "@/lib/postcards";
 import { CardBack } from "./card-back";
-import { PostcardImage } from "./postcard-image";
+import { PostcardImage, type PostcardSources } from "./postcard-image";
 import { ShareButton } from "./share-button";
 
 // The postcard image has a 16px border on each side.
@@ -34,6 +37,16 @@ async function loadPostcard(slug: string) {
 
 function title(postcard: SavedPostcard, landmarkName: string) {
   return `${postcard.name} sent you a postcard from ${landmarkName}`;
+}
+
+/** Image, fallback and video URLs for one light. */
+function sourcesFor(base: PostcardInput, light: PostcardLight): PostcardSources {
+  return {
+    cutout: postcardUrl({ ...base, style: "cutout", light }),
+    portrait: postcardUrl({ ...base, style: "portrait", light }),
+    video: postcardVideoUrl({ ...base, light }),
+    videoDownload: postcardVideoUrl({ ...base, light }, { download: true }),
+  };
 }
 
 /** "10 Nov 2026", in Minna's time zone, like a real postmark. */
@@ -101,7 +114,7 @@ async function Postcard({
   if (!loaded) notFound();
 
   const { postcard, landmark, landmarkSlug } = loaded;
-  const base = {
+  const base: PostcardInput = {
     cloudName: cloudName(),
     selfiePublicId: postcard.selfiePublicId,
     cutoutPublicId: postcard.cutoutPublicId,
@@ -116,18 +129,8 @@ async function Postcard({
       </h1>
 
       <PostcardImage
-        day={{
-          cutout: postcardUrl({ ...base, style: "cutout" }),
-          portrait: postcardUrl({ ...base, style: "portrait" }),
-        }}
-        golden={
-          landmark.golden
-            ? {
-                cutout: postcardUrl({ ...base, style: "cutout", light: "golden" }),
-                portrait: postcardUrl({ ...base, style: "portrait", light: "golden" }),
-              }
-            : undefined
-        }
+        day={sourcesFor(base, "day")}
+        golden={landmark.golden ? sourcesFor(base, "golden") : undefined}
         alt={`${postcard.name} at ${landmark.name}`}
         width={IMAGE_WIDTH}
         height={IMAGE_HEIGHT}
